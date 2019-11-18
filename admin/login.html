@@ -38,6 +38,7 @@
     </div>
   </div>
 
+  <!-- 引入模态框 -->
   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -50,7 +51,7 @@
           ...
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">确认</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">确认</button>
         </div>
       </div>
     </div>
@@ -64,8 +65,8 @@
         // 阻止默认行为
         e.preventDefault();
         // 获取用户输入的账号密码
-        var userName = $('.input_txt').val();
-        var userPwd = $('.input_pass').val();
+        var userName = $('.input_txt').val().trim();
+        var userPwd = $('.input_pass').val().trim();
         // 判断是否为空
         if (userName == '' || userPwd == '') {
           // 调用模态框
@@ -86,8 +87,11 @@
 
             $('#myModal').modal();
             $('.modal-body').text(res.msg);
+            // 判断是否登录成功
             if (res.code == 200) {
+              // 将token存入本地储存
               localStorage.setItem('token', res.token);
+              // 跳转到首页
               location.href = './index.html';
             }
 
