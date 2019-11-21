@@ -20,25 +20,28 @@
         <a href="#" class="logo"><img src="images/logo02.png" alt="logo"></a>
         <div class="user_info">
             <img src="images/2.jpg" alt="person">
-            <span>欢迎&nbsp;&nbsp;李思思</span>
+            <span>欢迎&nbsp;&nbsp;猪聪聪</span>
             <b>管理员</b>
         </div>
         <!-- 左侧导航栏 -->
         <div class="menu">
-            <div class="level01 active"><a href="#" target="main_frame"><i
+            <div class="level01 active"><a href="./main_count.html" target="main_frame"><i
                         class="iconfont icon-yidiandiantubiao04"></i><span>首页</span></a></div>
             <div class="level01"><a href="#"><i class="iconfont icon-icon-article"></i><span>文章管理</span><b
                         class="iconfont icon-arrowdownl"></b></a></div>
             <ul class="level02">
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
-                <li><a href="#" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
+                <li><a href="./article_list.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
+                <li><a href="./article_release.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
+                <li><a href="./article_category.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
                 </li>
             </ul>
 
-            <div class="level01"><a href="#" target="main_frame"><i
+            <div class="level01"><a href="./comment_list.html" target="main_frame"><i
                         class="iconfont icon-comment"></i><span>评论管理</span></a></div>
-            <div class="level01" id="user"><a href="#" target="main_frame"><i
+            <div class="level01" id="user"><a href="./user.html" target="main_frame"><i
                         class="iconfont icon-user"></i><span>个人中心</span></a></div>
         </div>
         <!-- 顶部栏 -->
@@ -51,29 +54,88 @@
         </div>
         <!-- 右侧主体内容 -->
         <div class="main" id="main_body">
+            <iframe src="./main_count.html" frameborder="0" name="main_frame" style="width:100%;height:100%"></iframe>
+        </div>
+    </div>
 
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">温馨提示<h4>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+                    <button type="button" class="btn btn-primary">再考虑一下</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         $(function () {
-            $.ajax({
-                type: 'get',
+            $.get({
                 url: 'http://localhost:8080/api/v1/admin/user/info',
-                // headers: {
-                //     Authorization: localStorage.getItem('token')
-                // },
                 success: function (res) {
-                    // console.log(res);
                     $('.user_info>img').attr('src', res.data.userPic);
-                    $('user_info>span').html('欢迎&nbsp;&nbsp;' + res.data.nickname);
+                    $('.user_info>span').html('欢迎&nbsp;&nbsp;' + res.data.nickname);
                     $('.user_center_link>img').attr('src', res.data.userPic)
                 }
             });
+            $('div.level01').click(function () {
+                $(this).addClass('active').siblings('div').removeClass('active');
+                if ($(this).index() == 1) {
+                    $('ul.level02').toggle();
+                    $('ul.level02 li:eq(0)>a')[0].click();
+                    $(this).find('b').toggleClass('rotate0')
+                }
+            })
+            $('ul.level02 li').click(function () {
+                $(this).addClass('active').siblings('li').removeClass('active');
+            })
+
+
+
+
+
+
+
+            // $.ajax({
+            //     type: 'get',
+            //     url: 'http://localhost:8080/api/v1/admin/user/info',
+            //     // headers: {
+            //     //     Authorization: localStorage.getItem('token')
+            //     // },
+            //     success: function (res) {
+            //         // console.log(res);
+            //         $('.user_info>img').attr('src', res.data.userPic);
+            //         $('.user_info>span').html('欢迎&nbsp;&nbsp;' + res.data.nickname);
+            //         $('.user_center_link>img').attr('src', res.data.userPic)
+            //     }
+            // });
             // 点击退出
             $('.logout').click(function () {
-                localStorage.removeItem('token');
-                location.href = './login.html';
+                // 模态框提示
+                $('#myModal').modal();
+                $('.modal-body').text('你真的要退出吗？')
+                // 点击确认退出登录
+                $('.btn.btn-default').click(function () {
+                    localStorage.removeItem('token');
+                    location.href = './login.html';
+                })
+                // 点击取消退出模态框
+                $('.btn.btn-primary').click(function () {
+                    $('#myModal').modal('hide');
+                })
+
+
             })
         })
 

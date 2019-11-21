@@ -14,6 +14,7 @@
     <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <script src="../admin/libs/http.js"></script>
 </head>
 
 <body>
@@ -31,14 +32,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <!-- <tr>
                         <td>奇趣事</td>
                         <td>funny</td>
                         <td class="text-center">
                             <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs">编辑</a>
                             <a href="javascript:void(0)" class="btn btn-danger btn-xs">删除</a>
                         </td>
-                    </tr>
+                    </tr> -->
                 </tbody>
                 <tfoot>
                     <tr>
@@ -51,5 +52,174 @@
             </table>
         </div>
     </div>
+
+    <!-- 添加模态框 -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">文章分类</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <!-- 隐藏域 -->
+                        <input type="hidden" name="" id="hiddenId">
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">文章别名</label>
+                            <input type="text" class="form-control" id="recipient-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">文章类别</label>
+                            <textarea class="form-control" id="message-text"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="quxiao">取消</button>
+                    <button type="button" class="btn btn-primary" id="sure">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script type="text/html" id="list">
+        {{each data}}
+            <tr>
+                <td>{{$value.name}}</td>
+                <td>{{$value.slug}}</td>
+                <td class="text-center">
+                    <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal" id='anniu' data-id='{{$value.id}}' class=" btn btn-info btn-xs">编辑</a>
+                    <a href="javascript:void(0)" class="btn btn-danger btn-xs" data-id='{{$value.id}}' id='btn-delete'>删除</a>
+                </td>
+            </tr>
+        {{/each}}
+    
+    
+    </script>
+
+    <script>
+        // 入口函数
+        $(function () {
+            // 掉用函数
+            newform()
+            // 封装渲染函数
+            function newform() {
+                $.get({
+                    url: BigNew.category_list,
+                    success: function (res) {
+                        var htmlStr = template('list', res)
+                        $('tbody').html(htmlStr)
+                    }
+                })
+            };
+
+            $('#myModal').on('show.bs.modal', function (e) {
+                // 点击模态框弹出，先清空输入框的内容
+                $('#recipient-name').val('');
+                $('#message-text').val('');
+                // 判断点击的是什么
+                if (e.relatedTarget == $('#xinzengfenlei')[0]) {   //点击的是新增
+                    $('#exampleModalLabel').text('新增文章分类');
+                    $('button.btn-primary').addClass('btn-success').removeClass('btn-danger')
+                    $('#sure').text('新增')
+
+                } else {
+
+                    $('#exampleModalLabel').text('编辑文章分类');
+                    $('button.btn-primary').addClass('btn-primary').removeClass('btn-success');
+                    $('#sure').text('编辑')
+                    $.get({
+                        url: BigNew.category_search,
+                        data: {
+                            id: $(e.relatedTarget).attr('data-id')
+                        },
+                        success: function (res) {
+                            // console.log(res);
+                            if (res.code == 200) {
+                                $('#recipient-name').val(res.data[0].name);
+                                $('#message-text').val(res.data[0].slug);
+                                $('#hiddenId').val(res.data[0].id)
+                            }
+                        }
+                    })
+                }
+            })
+
+            // 点击确认判断是新增还是编辑
+            $('#sure').click(function () {
+                if ($(this).hasClass('btn-success')) { //有btn-success的是新增
+                    $.post({
+                        url: BigNew.category_add,
+                        data: {
+                            name: $('#recipient-name').val(),
+                            slug: $('#message-text').val(),
+                        },
+                        success: function (res) {
+                            if (res.code == 201) {
+                                $('#myModal').modal('hide');
+                                newform()
+                            }
+
+                        }
+
+                    })
+                } else { //没有的是编辑
+                    $.post({
+                        url: BigNew.category_edit,
+                        data: {
+                            id: $('#hiddenId').val(),
+                            name: $('#recipient-name').val(),
+                            slug: $('#message-text').val(),
+                        },
+                        success: function (res) {
+                            $('#myModal').modal('hide');
+                            newform()
+                        }
+                    })
+                }
+            });
+            // 点击取消的时候清空value值
+            $('#quxiao').click(function () {
+                $('.modal-body form')[0].reset()
+            });
+            // 点击x清空value值
+            $('.close span').click(function () {
+                $('.modal-body form')[0].reset()
+            });
+
+            // 点击删除
+            // 事件委派
+            $('tbody').on('click', '#btn-delete', function () {
+                var date = confirm('你确定要删除吗？');
+                var deleteId = $(this).attr('data-id');
+                // console.log(deleteId);\
+                if (date) {
+                    $.post({
+                        url: BigNew.category_delete,
+                        data: {
+                            id: deleteId
+                        },
+                        success: function (res) {
+                            if (res.code == 204) {
+                                newform()
+                            }
+
+                        }
+                    })
+                }
+
+            })
+
+
+        })
+
+
+
+    </script>
+</body>
 
 </html>

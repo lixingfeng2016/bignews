@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="../admin/libs/http.js"></script>
 
 </head>
 
@@ -69,5 +70,58 @@
         </div>
     </div>
 </body>
+
+<script>
+    $(function () {
+        $.get({
+            url: BigNew.user_detail,
+            success: function (res) {
+                if (res.code == 200) {
+                    for (var key in res.data) {
+                        $('input.' + key).val(res.data[key])
+                    }
+                    $('.user_pic').attr('src', res.data.userPic)
+                }
+
+            }
+        });
+
+        $('#exampleInputFile').change(function () {
+            var xinxi = this.files[0];
+            var src = URL.createObjectURL(xinxi);
+            $('.user_pic').attr('src', src)
+        });
+        // 添加修改按钮点击事件
+        $('button.btn-edit').click(function (e) {
+            e.preventDefault();
+            // 获取表单的全部数据  只能用原生
+            var form = new FormData($('#form')[0]);
+            $.post({
+                url: BigNew.user_edit,
+                data: form,
+                contentType: false,
+                processData: false,
+                success: function (res) {
+                    if (res.code == 200) {
+                        $.get({
+                            url: 'http://localhost:8080/api/v1/admin/user/info',
+                            success: function (res) {
+                                parent.$('.user_info>img').attr('src', res.data.userPic);
+                                parent.$('.user_info>span').html('欢迎&nbsp;&nbsp;' + res.data.nickname);
+                                parent.$('.user_center_link>img').attr('src', res.data.userPic);
+                                window.location.reload()
+                            }
+                        });
+                    }
+
+                }
+            })
+        })
+
+    })
+
+
+
+</script>
 
 </html>
